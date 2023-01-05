@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pic is falling</title>
+  <link rel="stylesheet" href="snowflake.css">
+</head>
+<body>
+  <div class="control_panel">
+    <div class="control">
+      <span>이미지 개수</span>
+      <input class="control_input" type="number" name="num_snow" id="num_snow" value="300" max="1000" min="1">
+    </div>
+    <div class="control">
+      <span>낙하 속도</span>
+      <input type="range" name="speed" id="speed" min="1" max="20.0" value="3" step="0.1">
+    </div>
+    <div class="control">
+      <span>속도 다양성</span>
+      <input class="control_input" type="number" name="speed_var" id="speed_var" value="2" min="0" max="5">
+    </div>
+    <div class="control">
+      <span>최소 크기</span>
+      <input class="control_input" type="number" name="min_size" id="min_size" value="8" min="5">
+      <span>최대 크기</span>
+      <input class="control_input" type="number" name="max_size" id="max_size" value="20" max="100">
+    </div>
+    <button id="apply">적용</button>
+    <button id="clear">모두 제거</button>
+  </div>
+  <script src="snowflake.js"></script>
+</body>
+</html>
