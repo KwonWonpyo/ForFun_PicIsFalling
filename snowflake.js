@@ -38,7 +38,7 @@ function initSnow() {
     const init_opacity = Math.random() / 2 + 0.5;
     const duration = MAX_DURATION / speed.value + (Math.random() - 0.5) * speedVar.value;
 
-    makeSnowFlake(init_x, -9, init_delay, init_opacity, duration);
+    makeSnowFlake(init_x, -maxSize.value, init_delay, init_opacity, duration);
   }
 }
 
@@ -47,7 +47,7 @@ function runSnow() {
   const opacity = Math.random() / 2 + 0.5;
   const duration = MAX_DURATION / speed.value + (Math.random() - 0.5) * speedVar.value;
 
-  makeSnowFlake(x, -10, 0, opacity, duration);
+  makeSnowFlake(x, -maxSize.value, 0, opacity, duration);
 }
 
 initSnow();
@@ -79,4 +79,27 @@ function clearAll() {
     if (element.className === "snowflake") 
       body.removeChild(element);
   });
+}
+
+const previews = document.querySelectorAll('.image_preivew');
+const backgroundImage = document.querySelector('#background_file');
+
+backgroundImage.addEventListener('change', () => {
+  const imageSrc = URL.createObjectURL(backgroundImage.files[0]);
+  previews[0].src = imageSrc;
+});
+
+const openBtn = document.getElementById('openclose');
+const leftPanel = document.getElementById('left_panel');
+
+openBtn.addEventListener('click', toggleOpenClose);
+
+function toggleOpenClose() {
+  if (left_panel.style.left === '-15px') {
+    left_panel.style.left = '-300px';
+    openBtn.style.transform = 'rotate(0deg)';
+  } else {
+    left_panel.style.left = '-15px';
+    openBtn.style.transform = 'rotate(180deg)';
+  } 
 }
