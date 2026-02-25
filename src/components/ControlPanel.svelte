@@ -3,6 +3,9 @@
   import ColorPicker from './controls/ColorPicker.svelte'
   import ImageUploader from './controls/ImageUploader.svelte'
   import PresetSelector from './controls/PresetSelector.svelte'
+  import ModeTabs from './controls/ModeTabs.svelte'
+  import AmbientPanel from './AmbientPanel.svelte'
+  import CreatePanel from './CreatePanel.svelte'
   import {
     spawnRate,
     maxParticles,
@@ -21,6 +24,7 @@
     backgroundColor,
     backgroundImage,
     useBackgroundImage,
+    currentMode,
   } from '../stores/appState'
   import type { PresetConfig } from '../lib/engine/types'
 
@@ -38,10 +42,18 @@
 </script>
 
 <div class="panel-content">
+  <ModeTabs />
+
   <section>
     <h3>이펙트 선택</h3>
     <PresetSelector current={$currentPresetName} onselect={handlePresetSelect} />
   </section>
+
+  {#if $currentMode === 'ambient'}
+    <AmbientPanel />
+  {:else if $currentMode === 'create'}
+    <CreatePanel />
+  {/if}
 
   <section>
     <h3>파티클 설정</h3>
