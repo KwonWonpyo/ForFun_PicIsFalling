@@ -42,6 +42,7 @@ export default [
     },
     rules: {
       'svelte/no-dom-manipulating': 'off',
+      'no-unused-vars': 'off',
     },
   },
   prettier,
