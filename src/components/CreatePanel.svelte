@@ -1,4 +1,18 @@
 <script lang="ts">
+  import { downloadScene, loadSceneFromFile, copyShareUrl } from '../lib/scene'
+
+  let shareStatus = $state('')
+
+  async function handleShare() {
+    const ok = await copyShareUrl()
+    shareStatus = ok ? '✅ 링크가 복사되었습니다!' : '❌ 복사 실패'
+    setTimeout(() => (shareStatus = ''), 3000)
+  }
+
+  async function handleLoad() {
+    const ok = await loadSceneFromFile()
+    if (!ok) alert('파일을 불러올 수 없습니다.')
+  }
 </script>
 
 <div class="create-panel">
@@ -9,14 +23,24 @@
 
   <section>
     <h4>장면 저장/불러오기</h4>
-    <p class="placeholder">현재 설정을 JSON으로 저장하고 불러옵니다.</p>
-    <span class="badge">준비 중</span>
+    <div class="btn-row">
+      <button class="action-btn" onclick={() => downloadScene()}>
+        💾 JSON 저장
+      </button>
+      <button class="action-btn" onclick={handleLoad}>
+        📂 불러오기
+      </button>
+    </div>
   </section>
 
   <section>
     <h4>URL 공유</h4>
-    <p class="placeholder">파라미터를 URL에 인코딩하여 공유 링크를 생성합니다.</p>
-    <span class="badge">준비 중</span>
+    <button class="action-btn wide" onclick={handleShare}>
+      🔗 공유 링크 복사
+    </button>
+    {#if shareStatus}
+      <p class="status">{shareStatus}</p>
+    {/if}
   </section>
 
   <section>
@@ -53,13 +77,45 @@
   h4 {
     font-size: 13px;
     color: #ccc;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
   }
 
   .desc {
     font-size: 12px;
     color: #888;
     line-height: 1.4;
+  }
+
+  .btn-row {
+    display: flex;
+    gap: 6px;
+  }
+
+  .action-btn {
+    flex: 1;
+    padding: 8px 8px;
+    background: #2a3040;
+    border: 1px solid #555;
+    border-radius: 6px;
+    color: #ddd;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .action-btn:hover {
+    background: #3a4560;
+  }
+
+  .action-btn.wide {
+    flex: none;
+    width: 100%;
+  }
+
+  .status {
+    font-size: 11px;
+    color: #8ab4f8;
+    margin-top: 4px;
   }
 
   .placeholder {
