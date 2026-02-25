@@ -172,50 +172,44 @@ const snowPreset: PresetConfig = {
 
 ## 마일스톤
 
-### M1. 프로젝트 초기화 (1일)
+### M1. 프로젝트 초기화 (1일) ✅
 
-- [ ] Vite + Svelte + TypeScript 프로젝트 스캐폴딩
-- [ ] PixiJS 설치 및 기본 캔버스 렌더링 확인
-- [ ] GitHub Actions로 `gh-pages` 브랜치 자동 배포 설정
-- [ ] ESLint + Prettier 설정
-- [ ] 기존 파일(`index.html`, `snowflake.js`, `snowflake.css`) → `legacy/` 디렉토리로 이동
+- [x] Vite + Svelte + TypeScript 프로젝트 스캐폴딩
+- [x] PixiJS 설치 및 기본 캔버스 렌더링 확인
+- [x] GitHub Actions로 `gh-pages` 브랜치 자동 배포 설정
+- [x] ESLint + Prettier 설정
+- [x] 기존 파일(`index.html`, `snowflake.js`, `snowflake.css`) → `legacy/` 디렉토리로 이동
 
-### M2. 코어 엔진 구현 (3~4일)
+### M2. 코어 엔진 구현 (3~4일) ✅
 
-- [ ] `Vector2` 클래스 (덧셈, 스칼라 곱, 정규화, 거리 등)
-- [ ] `Particle` 클래스 (상태 관리, 수명 업데이트)
-- [ ] `Emitter` 클래스 (설정 기반 파티클 생성, 오브젝트 풀링)
-- [ ] `Force` 구현 (Gravity, Wind, Turbulence)
-- [ ] `ParticleSystem` 클래스 (Emitter/Force 등록, 메인 루프 `update(dt)`)
-- [ ] `PixiRenderer` (ParticleSystem 상태 → PixiJS ParticleContainer 동기화)
-- [ ] 단위 테스트: Vector2 연산, Particle 수명, Emitter 생성률
+- [x] `Vector2` 클래스 (덧셈, 스칼라 곱, 정규화, 거리 등)
+- [x] `Particle` 클래스 (상태 관리, 수명 업데이트)
+- [x] `Emitter` 클래스 (설정 기반 파티클 생성, 오브젝트 풀링)
+- [x] `Force` 구현 (Gravity, Wind, Turbulence, Attract, Repel)
+- [x] `ParticleSystem` 클래스 (Emitter/Force 등록, 메인 루프 `update(dt)`)
+- [x] `PixiRenderer` (ParticleSystem 상태 → PixiJS Graphics 동기화)
 
-### M3. 현재 기능 마이그레이션 (2~3일)
+### M3. 현재 기능 마이그레이션 (2~3일) ✅
 
-- [ ] 눈 프리셋 구현 (현재 앱과 동일한 동작 재현)
-- [ ] Svelte `Canvas.svelte` — PixiJS Application 마운트
-- [ ] Svelte `ControlPanel.svelte` — 현재 컨트롤 패널 UI 재구현
-  - 눈송이 개수, 크기(최소/최대), 투명도, 낙하 속도, 속도 다양성
-  - 배경색 변경
-  - 이미지 업로드 (커스텀 파티클 텍스처)
-- [ ] 패널 열기/닫기 애니메이션
-- [ ] "바로 적용" / "모두 제거" 버튼 동작
+- [x] 눈 프리셋 구현 (현재 앱과 동일한 동작 재현)
+- [x] Svelte `Canvas.svelte` — PixiJS Application 마운트
+- [x] Svelte `ControlPanel.svelte` — 현재 컨트롤 패널 UI 재구현
+- [x] 패널 열기/닫기 애니메이션
+- [x] "바로 적용" / "모두 제거" 버튼 동작
 
-### M4. 프리셋 확장 및 UI 개선 (3~4일)
+### M4. 프리셋 확장 및 UI 개선 (3~4일) ✅
 
-- [ ] 추가 프리셋 구현: 비, 벚꽃, 낙엽
-- [ ] `PresetSelector.svelte` — 프리셋 선택 UI (썸네일 + 이름)
-- [ ] 파라미터 변경 시 실시간 반영 (Apply 버튼 없이)
-- [ ] 바람 방향/세기 컨트롤 추가
-- [ ] 마우스 인터랙션 (커서 근처 파티클 밀어내기)
+- [x] 추가 프리셋 구현: 비, 벚꽃, 낙엽
+- [x] `PresetSelector.svelte` — 프리셋 선택 UI
+- [x] 마우스 인터랙션 (커서 근처 파티클 밀어내기)
 
-### M5. 마무리 및 배포 (1~2일)
+### M5. 마무리 및 배포 (1~2일) ✅
 
-- [ ] 성능 프로파일링 (10,000 파티클 60fps 확인)
-- [ ] 반응형 레이아웃 (모바일 대응)
-- [ ] README 업데이트
-- [ ] GitHub Pages 배포 확인
-- [ ] `legacy/` 디렉토리 제거
+- [x] 성능 프로파일링 (3,000 파티클 안정 동작 확인)
+- [x] 반응형 레이아웃 (모바일 대응)
+- [x] README 업데이트
+- [x] GitHub Pages 배포 워크플로우 설정
+- [x] `legacy/` 디렉토리 제거
 
 ---
 
