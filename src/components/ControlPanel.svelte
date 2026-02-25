@@ -235,4 +235,18 @@
   .btn-clear:hover {
     background: #4b5563;
   }
+
+  @media (max-width: 480px) {
+    section {
+      padding: 6px 0;
+    }
+
+    h3 {
+      font-size: 13px;
+    }
+
+    .button-row {
+      padding: 8px 0;
+    }
+  }
 </style>

@@ -79,4 +79,15 @@
     color: white;
     background: rgba(30, 40, 60, 0.95);
   }
+
+  @media (max-width: 480px) {
+    .side-panel {
+      width: 100%;
+      transform: translateX(-100%);
+    }
+
+    .toggle-btn {
+      right: -36px;
+    }
+  }
 </style>
