@@ -1,84 +1,12 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>눈 내리는 배경화면</title>
-  <link rel="stylesheet" href="snowflake.css">
-  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/spectrum-colorpicker2/dist/spectrum.min.css">
-</head>
-<body>
-  <div class="control_panel_area">
-    <div class="control_panel" id="left_panel">
-      <div class="control_title">눈송이 바꾸기</div>
-      <div class="control">
-        <div>
-          <input type="radio" id="basic_snow" name="flake_type" value="basic_snow" checked>
-          <label for="basic_snow">기본 눈송이</label>
-        </div>
-        <input class="color-picker" value='#ffffff' />
-        <div>
-          <input type="radio" id="pic_flake" name="flake_type" value="pic_flake">
-          <label for="pic_flake">그림 눈송이</label>
-        </div>
-        <img src="https://i0.wp.com/adventure.co.kr/wp-content/uploads/2020/09/no-image.jpg" class="image_preivew control_input" />
-        <span></span>
-        <label for="background_file" class="upload_btn control_input">
-          <input id="background_file" type="file" accept="image/*" />
-          <span>이미지 업로드</span>
-        </label>
-      </div>
-      <div class="control_title">눈송이 크기</div>
-      <div class="control">
-        <span class="control_prop_name">최소 크기</span>
-        <input class="control_input" type="number" name="min_size" id="min_size" value="8" min="5">
-        <span class="control_prop_name">최대 크기</span>
-        <input class="control_input" type="number" name="max_size" id="max_size" value="20" max="100">
-      </div>
-      <div class="control_title">배경 설정</div>
-      <div class="control">
-        <div>
-          <input type="radio" id="bg_simple" name="bg_type" value="bg_simple" checked>
-          <label for="bg_simple">단색 배경</label>
-        </div>
-        <input class="color-picker" value='#0d182c' />
-        <div>
-          <input type="radio" id="bg_image" name="bg_type" value="bg_image">
-          <label for="bg_image">이미지 배경</label>
-        </div>
-        <img src="https://i0.wp.com/adventure.co.kr/wp-content/uploads/2020/09/no-image.jpg" class="image_preivew control_input" />
-        <span></span>
-        <label for="background_file" class="upload_btn control_input">
-          <input id="background_file" type="file" accept="image/*" />
-          <span>이미지 업로드</span>
-        </label>
-      </div>
-      <div class="control_title">날씨 조정</div>
-      <div class="control">
-        <span class="control_prop_name">눈송이 개수</span>
-        <input class="control_input" type="number" name="num_snow" id="num_snow" value="300" max="1000" min="1">
-        <span class="control_prop_name">눈송이 투명도</span>
-        <input type="range" name="opacity" id="opacity" min="0.5" max="1" value="1" step="0.05">
-        <span class="control_prop_name">낙하 속도</span>
-        <input type="range" name="speed" id="speed" min="1" max="20.0" value="3" step="0.1">
-        <span class="control_prop_name">속도 다양성</span>
-        <input class="control_input" type="number" name="speed_var" id="speed_var" value="2" min="0" max="5">
-      </div>
-      <button id="apply">바로 적용</button>
-      <button id="clear">모두 제거</button>
-      <button type="button"  class="panel_openclose" id="openclose"></button>
-    </div>
-  </div>
-  <script src="snowflake.js"></script>
-  <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/spectrum-colorpicker2/dist/spectrum.min.js"></script>
-  <script>
-    $('.color-picker').spectrum({
-      type: "text",
-      showButtons: false,
-      allowEmpty: false
-    });
-  </script>
-</body>
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ForFun — 그림이 눈처럼 내린다!</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
 </html>
