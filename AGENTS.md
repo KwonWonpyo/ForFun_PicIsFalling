@@ -4,19 +4,34 @@
 
 ### 프로젝트 개요
 
-**ForFun_PicIsFalling** — 눈송이 애니메이션 정적 웹페이지. Vanilla HTML/CSS/JS로 구성되어 있으며 빌드 도구, 패키지 매니저, 테스트 프레임워크, 린터가 없음.
+**ForFun_PicIsFalling** — PixiJS 기반 인터랙티브 파티클 아트 플랫폼. Svelte + TypeScript + Vite로 구성.
 
 ### 개발 서버 실행
 
 ```bash
-python3 -m http.server 8080
+npm run dev
 ```
 
-브라우저에서 `http://localhost:8080/` 으로 접속. 별도의 빌드 단계 없음.
+`http://localhost:5173/ForFun_PicIsFalling/` 으로 접속. `vite.config.ts`에 `base: '/ForFun_PicIsFalling/'`가 설정되어 있어 base path 포함 필요.
 
-### 주요 참고사항
+### 주요 명령어
 
-- 외부 의존성(jQuery, spectrum-colorpicker2)은 CDN으로 로드됨. 인터넷 연결이 없으면 색상 선택기가 작동하지 않지만, 핵심 눈송이 애니메이션은 동작함.
-- `package.json`, `Makefile`, Docker 파일 등 없음 — 의존성 설치 불필요.
-- 자동화된 테스트, 린트 도구 없음. 변경사항은 브라우저에서 수동 확인.
-- 파일 구조: `index.html`, `snowflake.js`, `snowflake.css`, `btn_openclose.png` (4개 소스 파일).
+- `npm run dev` — 개발 서버 (HMR)
+- `npm run build` — 프로덕션 빌드 (`dist/`)
+- `npm run check` — Svelte + TypeScript 타입 체크
+- `npx eslint src/` — 린트
+- `npx prettier --check .` — 포맷 체크
+
+### 디렉토리 구조 참고
+
+- `src/lib/engine/` — 프레임워크 무관 코어 파티클 엔진 (순수 TypeScript)
+- `src/lib/renderer/` — PixiJS 렌더링 레이어
+- `src/lib/presets/` — 이펙트 프리셋 (눈, 비, 벚꽃 등)
+- `src/components/` — Svelte UI 컴포넌트
+- `src/stores/` — Svelte 스토어 (상태 관리)
+- `legacy/` — 리팩토링 이전 원본 HTML/CSS/JS 파일
+
+### 주의사항
+
+- GitHub Pages 배포 시 `base` 경로가 `/ForFun_PicIsFalling/`이므로 에셋 경로에 주의.
+- `src/lib/engine/`은 Svelte나 PixiJS를 import하면 안 됨 (향후 npm 패키지로 추출 예정).
