@@ -10,6 +10,8 @@
   import { Application } from 'pixi.js'
   import { ParticleSystem } from '../lib/engine/ParticleSystem'
   import { PixiRenderer } from '../lib/renderer/PixiRenderer'
+  import { RepelForce } from '../lib/engine/physics/Forces'
+  import { Vector2 } from '../lib/engine/physics/Vector2'
   import { livePreset } from '../stores/particleConfig'
   import { backgroundColor, backgroundImage, useBackgroundImage } from '../stores/appState'
 
@@ -17,11 +19,13 @@
   let system: ParticleSystem | null = null
   let renderer: PixiRenderer | null = null
   let pixiApp: Application | null = null
+  let mouseForce: RepelForce | null = null
 
   export function apply(): void {
     if (!system) return
     system.clear()
     system.loadPreset($livePreset)
+    if (mouseForce) system.addForce(mouseForce)
   }
 
   export function clear(): void {
@@ -65,8 +69,20 @@
 
     renderer = new PixiRenderer(pixiApp)
 
+    const mousePos = new Vector2(-9999, -9999)
+    mouseForce = new RepelForce(mousePos, 120, 100)
+    system.addForce(mouseForce)
+
     window.addEventListener('resize', () => {
       system?.setBounds(window.innerWidth, window.innerHeight)
+    })
+
+    window.addEventListener('mousemove', (e) => {
+      mousePos.set(e.clientX, e.clientY)
+    })
+
+    window.addEventListener('mouseleave', () => {
+      mousePos.set(-9999, -9999)
     })
 
     pixiApp.ticker.add((ticker) => {

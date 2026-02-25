@@ -2,6 +2,7 @@
   import SliderControl from './controls/SliderControl.svelte'
   import ColorPicker from './controls/ColorPicker.svelte'
   import ImageUploader from './controls/ImageUploader.svelte'
+  import PresetSelector from './controls/PresetSelector.svelte'
   import {
     spawnRate,
     maxParticles,
@@ -13,12 +14,15 @@
     particleColor,
     customTexture,
     useCustomTexture,
+    currentPresetName,
+    applyPreset,
   } from '../stores/particleConfig'
   import {
     backgroundColor,
     backgroundImage,
     useBackgroundImage,
   } from '../stores/appState'
+  import type { PresetConfig } from '../lib/engine/types'
 
   interface Props {
     onApply: () => void
@@ -26,11 +30,21 @@
   }
 
   let { onApply, onClear }: Props = $props()
+
+  function handlePresetSelect(preset: PresetConfig) {
+    applyPreset(preset)
+    onApply()
+  }
 </script>
 
 <div class="panel-content">
   <section>
-    <h3>눈송이 설정</h3>
+    <h3>이펙트 선택</h3>
+    <PresetSelector current={$currentPresetName} onselect={handlePresetSelect} />
+  </section>
+
+  <section>
+    <h3>파티클 설정</h3>
     <SliderControl
       label="파티클 수"
       value={$maxParticles}

@@ -2,6 +2,7 @@ import { writable, derived } from 'svelte/store'
 import type { PresetConfig } from '../lib/engine/types'
 import { snowPreset } from '../lib/presets'
 
+export const currentPresetName = writable<string>('snow')
 export const currentPreset = writable<PresetConfig>(snowPreset)
 
 export const spawnRate = writable(40)
@@ -49,6 +50,7 @@ export const livePreset = derived(
 )
 
 export function applyPreset(preset: PresetConfig): void {
+  currentPresetName.set(preset.name)
   currentPreset.set(preset)
   spawnRate.set(preset.emitter.spawnRate)
   maxParticles.set(preset.emitter.maxParticles)
