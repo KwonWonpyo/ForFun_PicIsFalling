@@ -1,7 +1,18 @@
 <script lang="ts">
   import { downloadScene, loadSceneFromFile, copyShareUrl } from '../lib/scene'
+  import { presets } from '../lib/presets'
+
+  interface Props {
+    onScreenshot: () => void
+    onAddLayer: (presetName: string) => void
+    onRemoveLayer: (index: number) => void
+    layers: string[]
+  }
+
+  let { onScreenshot, onAddLayer, onRemoveLayer, layers }: Props = $props()
 
   let shareStatus = $state('')
+  let selectedLayerPreset = $state('snow')
 
   async function handleShare() {
     const ok = await copyShareUrl()
@@ -18,7 +29,6 @@
 <div class="create-panel">
   <section>
     <h3>🎨 Create Mode</h3>
-    <p class="desc">장면을 만들고 저장/공유/내보내기 할 수 있습니다.</p>
   </section>
 
   <section>
@@ -44,15 +54,37 @@
   </section>
 
   <section>
-    <h4>스크린샷 내보내기</h4>
-    <p class="placeholder">현재 화면을 PNG로 캡처합니다.</p>
-    <span class="badge">준비 중</span>
+    <h4>스크린샷</h4>
+    <button class="action-btn wide" onclick={onScreenshot}>
+      📸 PNG 스크린샷 저장
+    </button>
   </section>
 
   <section>
     <h4>멀티 레이어</h4>
-    <p class="placeholder">여러 이펙트를 동시에 겹쳐 깊이감을 표현합니다.</p>
-    <span class="badge">준비 중</span>
+    <p class="desc">여러 이펙트를 동시에 겹쳐 깊이감을 표현합니다.</p>
+    <div class="layer-add">
+      <select bind:value={selectedLayerPreset} class="layer-select">
+        {#each presets as preset (preset.name)}
+          <option value={preset.name}>{preset.label}</option>
+        {/each}
+      </select>
+      <button class="action-btn" onclick={() => onAddLayer(selectedLayerPreset)}>
+        + 레이어 추가
+      </button>
+    </div>
+    {#if layers.length > 0}
+      <div class="layer-list">
+        {#each layers as layerPreset, i (i)}
+          <div class="layer-item">
+            <span class="layer-name">레이어 {i + 1}: {layerPreset}</span>
+            <button class="layer-remove" onclick={() => onRemoveLayer(i)}>✕</button>
+          </div>
+        {/each}
+      </div>
+    {:else}
+      <p class="placeholder">추가된 레이어가 없습니다.</p>
+    {/if}
   </section>
 </div>
 
@@ -84,6 +116,7 @@
     font-size: 12px;
     color: #888;
     line-height: 1.4;
+    margin-bottom: 6px;
   }
 
   .btn-row {
@@ -118,20 +151,58 @@
     margin-top: 4px;
   }
 
+  .layer-add {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+
+  .layer-select {
+    flex: 1;
+    padding: 6px;
+    background: #2a3040;
+    border: 1px solid #555;
+    border-radius: 6px;
+    color: #ddd;
+    font-size: 12px;
+  }
+
+  .layer-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .layer-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+  }
+
+  .layer-name {
+    font-size: 12px;
+    color: #ccc;
+  }
+
+  .layer-remove {
+    background: none;
+    border: none;
+    color: #ff6b6b;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 0 4px;
+  }
+
+  .layer-remove:hover {
+    color: #ff4444;
+  }
+
   .placeholder {
     font-size: 12px;
     color: #666;
     font-style: italic;
-  }
-
-  .badge {
-    display: inline-block;
-    margin-top: 4px;
-    padding: 2px 8px;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid #444;
-    border-radius: 10px;
-    font-size: 10px;
-    color: #888;
   }
 </style>

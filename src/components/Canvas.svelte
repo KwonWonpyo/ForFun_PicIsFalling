@@ -2,6 +2,10 @@
   export interface CanvasApi {
     apply: () => void
     clear: () => void
+    screenshot: () => void
+    addLayer: (presetName: string) => void
+    removeLayer: (index: number) => void
+    getLayerCount: () => number
   }
 </script>
 
@@ -14,12 +18,21 @@
   import { Vector2 } from '../lib/engine/physics/Vector2'
   import { livePreset } from '../stores/particleConfig'
   import { backgroundImage, useBackgroundImage } from '../stores/appState'
+  import { downloadScreenshot } from '../lib/scene/screenshot'
+  import { presetMap } from '../lib/presets'
 
   let canvasContainer: HTMLDivElement
   let system: ParticleSystem | null = null
   let renderer: PixiRenderer | null = null
   let pixiApp: Application | null = null
   let mouseForce: RepelForce | null = null
+
+  interface Layer {
+    system: ParticleSystem
+    renderer: PixiRenderer
+    preset: string
+  }
+  let extraLayers: Layer[] = []
 
   let bgStyle = $derived.by(() => {
     const preset = $livePreset
@@ -48,6 +61,37 @@
       emitter.clear()
     }
     renderer?.clear()
+  }
+
+  export function screenshot(): void {
+    if (pixiApp) downloadScreenshot(pixiApp)
+  }
+
+  export function addLayer(presetName: string): void {
+    if (!pixiApp) return
+    const preset = presetMap[presetName]
+    if (!preset) return
+
+    const layerSystem = new ParticleSystem()
+    layerSystem.setBounds(window.innerWidth, window.innerHeight)
+    layerSystem.loadPreset(preset)
+    if (mouseForce) layerSystem.addForce(mouseForce)
+
+    const layerRenderer = new PixiRenderer(pixiApp)
+    extraLayers = [...extraLayers, { system: layerSystem, renderer: layerRenderer, preset: presetName }]
+  }
+
+  export function removeLayer(index: number): void {
+    if (index < 0 || index >= extraLayers.length) return
+    const layer = extraLayers[index]
+    layer.system.clear()
+    layer.renderer.clear()
+    layer.renderer.destroy()
+    extraLayers = extraLayers.filter((_, i) => i !== index)
+  }
+
+  export function getLayerCount(): number {
+    return extraLayers.length
   }
 
   $effect(() => {
@@ -80,6 +124,9 @@
 
     window.addEventListener('resize', () => {
       system?.setBounds(window.innerWidth, window.innerHeight)
+      for (const layer of extraLayers) {
+        layer.system.setBounds(window.innerWidth, window.innerHeight)
+      }
     })
 
     window.addEventListener('mousemove', (e) => {
@@ -92,11 +139,20 @@
 
     pixiApp.ticker.add((ticker) => {
       const dt = ticker.deltaTime / 60
+
       system?.update(dt)
       if (system) renderer?.sync(system)
+
+      for (const layer of extraLayers) {
+        layer.system.update(dt)
+        layer.renderer.sync(layer.system)
+      }
     })
 
     return () => {
+      for (const layer of extraLayers) {
+        layer.renderer.destroy()
+      }
       renderer?.destroy()
       pixiApp?.destroy(true)
     }

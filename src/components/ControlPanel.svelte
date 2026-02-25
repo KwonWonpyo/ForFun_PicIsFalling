@@ -31,9 +31,13 @@
   interface Props {
     onApply: () => void
     onClear: () => void
+    onScreenshot: () => void
+    onAddLayer: (presetName: string) => void
+    onRemoveLayer: (index: number) => void
+    layers: string[]
   }
 
-  let { onApply, onClear }: Props = $props()
+  let { onApply, onClear, onScreenshot, onAddLayer, onRemoveLayer, layers }: Props = $props()
 
   function handlePresetSelect(preset: PresetConfig) {
     applyPreset(preset)
@@ -52,7 +56,7 @@
   {#if $currentMode === 'ambient'}
     <AmbientPanel />
   {:else if $currentMode === 'create'}
-    <CreatePanel />
+    <CreatePanel {onScreenshot} {onAddLayer} {onRemoveLayer} {layers} />
   {/if}
 
   <section>
