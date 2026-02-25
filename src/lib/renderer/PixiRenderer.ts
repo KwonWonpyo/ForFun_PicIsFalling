@@ -1,4 +1,12 @@
-import { Application, Container, Sprite, Texture, Assets } from 'pixi.js'
+import {
+  Application,
+  Container,
+  Sprite,
+  Texture,
+  Assets,
+  RenderTexture,
+  Graphics,
+} from 'pixi.js'
 import type { ParticleSystem } from '../engine/ParticleSystem'
 import type { Particle } from '../engine/Particle'
 
@@ -9,7 +17,9 @@ const TEXTURE_PATHS: Record<string, string[]> = {
   leaf: ['assets/particles/leaf1.svg', 'assets/particles/leaf2.svg'],
 }
 
-interface RenderParticle {
+const RASTER_SIZE = 64
+
+interface SpriteEntry {
   sprite: Sprite
   active: boolean
   textureKey: string
@@ -18,11 +28,12 @@ interface RenderParticle {
 export class PixiRenderer {
   app: Application
   private container: Container
-  private renderPool: RenderParticle[] = []
+  private pool: SpriteEntry[] = []
   private activeCount: number = 0
   private textures: Map<string, Texture[]> = new Map()
   private fallbackTexture: Texture | null = null
   private loaded: boolean = false
+  private particleTextureCache: WeakMap<Particle, { key: string; tex: Texture }> = new WeakMap()
 
   constructor(app: Application) {
     this.app = app
@@ -34,15 +45,18 @@ export class PixiRenderer {
   private async loadTextures(): Promise<void> {
     const base = import.meta.env.BASE_URL ?? '/'
 
+    this.fallbackTexture = this.createCircleTexture()
+
     for (const [key, paths] of Object.entries(TEXTURE_PATHS)) {
       const textures: Texture[] = []
       for (const p of paths) {
         try {
           const fullPath = `${base}${p}`
-          const texture = await Assets.load(fullPath)
-          textures.push(texture)
+          const svgTexture = await Assets.load(fullPath)
+          const rasterized = this.rasterize(svgTexture)
+          textures.push(rasterized)
         } catch {
-          // texture load failed, will use fallback
+          // fallback to circle
         }
       }
       if (textures.length > 0) {
@@ -53,25 +67,53 @@ export class PixiRenderer {
     this.loaded = true
   }
 
-  private getTexture(textureId?: string): Texture {
-    if (textureId && this.textures.has(textureId)) {
-      const textures = this.textures.get(textureId)!
-      return textures[Math.floor(Math.random() * textures.length)]
+  private rasterize(svgTexture: Texture): RenderTexture {
+    const rt = RenderTexture.create({ width: RASTER_SIZE, height: RASTER_SIZE })
+    const tempSprite = new Sprite(svgTexture)
+    tempSprite.width = RASTER_SIZE
+    tempSprite.height = RASTER_SIZE
+    this.app.renderer.render({ container: tempSprite, target: rt })
+    tempSprite.destroy()
+    return rt
+  }
+
+  private createCircleTexture(): RenderTexture {
+    const rt = RenderTexture.create({ width: 32, height: 32 })
+    const g = new Graphics()
+    g.circle(16, 16, 14)
+    g.fill(0xffffff)
+    this.app.renderer.render({ container: g, target: rt })
+    g.destroy()
+    return rt
+  }
+
+  private getTexture(particle: Particle): Texture {
+    const cached = this.particleTextureCache.get(particle)
+    const wantedKey = particle.textureId ?? ''
+
+    if (cached && cached.key === wantedKey) {
+      return cached.tex
     }
 
-    if (!this.fallbackTexture) {
-      this.fallbackTexture = Texture.WHITE
+    let tex: Texture
+    if (particle.textureId && this.textures.has(particle.textureId)) {
+      const textures = this.textures.get(particle.textureId)!
+      tex = textures[Math.floor(Math.random() * textures.length)]
+    } else {
+      tex = this.fallbackTexture!
     }
-    return this.fallbackTexture
+
+    this.particleTextureCache.set(particle, { key: wantedKey, tex })
+    return tex
   }
 
   private ensureCapacity(needed: number): void {
-    while (this.renderPool.length < needed) {
+    while (this.pool.length < needed) {
       const sprite = new Sprite()
       sprite.anchor.set(0.5)
       sprite.visible = false
       this.container.addChild(sprite)
-      this.renderPool.push({ sprite, active: false, textureKey: '' })
+      this.pool.push({ sprite, active: false, textureKey: '' })
     }
   }
 
@@ -87,33 +129,30 @@ export class PixiRenderer {
 
     this.ensureCapacity(allParticles.length)
 
-    for (let i = this.activeCount; i > allParticles.length; i--) {
-      const rp = this.renderPool[i - 1]
-      rp.sprite.visible = false
-      rp.active = false
+    for (let i = allParticles.length; i < this.activeCount; i++) {
+      this.pool[i].sprite.visible = false
+      this.pool[i].active = false
     }
 
     for (let i = 0; i < allParticles.length; i++) {
       const p = allParticles[i]
-      const rp = this.renderPool[i]
+      const entry = this.pool[i]
+      const tex = this.getTexture(p)
 
-      const desiredKey = p.textureId ?? ''
-      if (!rp.active || rp.textureKey !== desiredKey) {
-        rp.sprite.texture = this.getTexture(p.textureId)
-        rp.active = true
-        rp.textureKey = desiredKey
+      if (entry.sprite.texture !== tex) {
+        entry.sprite.texture = tex
       }
 
-      rp.sprite.x = p.position.x
-      rp.sprite.y = p.position.y
+      entry.sprite.x = p.position.x
+      entry.sprite.y = p.position.y
 
       const baseScale = p.size / 8
-      rp.sprite.scale.set(baseScale * p.currentScaleX, baseScale)
-
-      rp.sprite.rotation = p.rotation
-      rp.sprite.alpha = p.opacity
-      rp.sprite.tint = p.color
-      rp.sprite.visible = true
+      entry.sprite.scale.set(baseScale * p.currentScaleX, baseScale)
+      entry.sprite.rotation = p.rotation
+      entry.sprite.alpha = p.opacity
+      entry.sprite.tint = p.color
+      entry.sprite.visible = true
+      entry.active = true
     }
 
     this.activeCount = allParticles.length
@@ -121,9 +160,8 @@ export class PixiRenderer {
 
   clear(): void {
     for (let i = 0; i < this.activeCount; i++) {
-      const rp = this.renderPool[i]
-      rp.sprite.visible = false
-      rp.active = false
+      this.pool[i].sprite.visible = false
+      this.pool[i].active = false
     }
     this.activeCount = 0
   }
