@@ -2,6 +2,7 @@
   import Canvas from './components/Canvas.svelte'
   import ControlPanel from './components/ControlPanel.svelte'
   import SidePanel from './components/layout/SidePanel.svelte'
+  import { ambientGradient } from './stores/appState'
 
   let canvas: Canvas | undefined = $state()
   let layers: string[] = $state([])
@@ -27,6 +28,10 @@
     canvas?.removeLayer(index)
     layers = layers.filter((_, i) => i !== index)
   }
+
+  function handleTimeBackground(gradient: string) {
+    ambientGradient.set(gradient)
+  }
 </script>
 
 <Canvas bind:this={canvas} />
@@ -38,6 +43,7 @@
     onScreenshot={handleScreenshot}
     onAddLayer={handleAddLayer}
     onRemoveLayer={handleRemoveLayer}
+    onTimeBackground={handleTimeBackground}
     {layers}
   />
 </SidePanel>

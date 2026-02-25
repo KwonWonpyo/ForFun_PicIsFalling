@@ -17,7 +17,7 @@
   import { RepelForce } from '../lib/engine/physics/Forces'
   import { Vector2 } from '../lib/engine/physics/Vector2'
   import { livePreset } from '../stores/particleConfig'
-  import { backgroundImage, useBackgroundImage } from '../stores/appState'
+  import { backgroundImage, useBackgroundImage, ambientGradient } from '../stores/appState'
   import { downloadScreenshot } from '../lib/scene/screenshot'
   import { presetMap } from '../lib/presets'
 
@@ -35,6 +35,9 @@
   let extraLayers: Layer[] = []
 
   let bgStyle = $derived.by(() => {
+    const ambient = $ambientGradient
+    if (ambient) return ambient
+
     const preset = $livePreset
 
     if ($useBackgroundImage && $backgroundImage) {
