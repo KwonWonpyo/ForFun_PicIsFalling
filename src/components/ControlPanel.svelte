@@ -3,6 +3,9 @@
   import ColorPicker from './controls/ColorPicker.svelte'
   import ImageUploader from './controls/ImageUploader.svelte'
   import PresetSelector from './controls/PresetSelector.svelte'
+  import ModeTabs from './controls/ModeTabs.svelte'
+  import AmbientPanel from './AmbientPanel.svelte'
+  import CreatePanel from './CreatePanel.svelte'
   import {
     spawnRate,
     maxParticles,
@@ -21,15 +24,21 @@
     backgroundColor,
     backgroundImage,
     useBackgroundImage,
+    currentMode,
   } from '../stores/appState'
   import type { PresetConfig } from '../lib/engine/types'
 
   interface Props {
     onApply: () => void
     onClear: () => void
+    onScreenshot: () => void
+    onAddLayer: (presetName: string) => void
+    onRemoveLayer: (index: number) => void
+    onTimeBackground: (gradient: string) => void
+    layers: string[]
   }
 
-  let { onApply, onClear }: Props = $props()
+  let { onApply, onClear, onScreenshot, onAddLayer, onRemoveLayer, onTimeBackground, layers }: Props = $props()
 
   function handlePresetSelect(preset: PresetConfig) {
     applyPreset(preset)
@@ -38,10 +47,18 @@
 </script>
 
 <div class="panel-content">
+  <ModeTabs />
+
   <section>
     <h3>이펙트 선택</h3>
     <PresetSelector current={$currentPresetName} onselect={handlePresetSelect} />
   </section>
+
+  {#if $currentMode === 'ambient'}
+    <AmbientPanel {onApply} {onTimeBackground} />
+  {:else if $currentMode === 'create'}
+    <CreatePanel {onScreenshot} {onAddLayer} {onRemoveLayer} {layers} />
+  {/if}
 
   <section>
     <h3>파티클 설정</h3>

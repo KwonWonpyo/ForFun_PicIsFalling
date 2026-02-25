@@ -17,11 +17,18 @@ export interface EmitterConfig {
   texture?: string
 }
 
+export interface PresetBackground {
+  type: 'solid' | 'gradient'
+  color?: string
+  gradient?: string
+}
+
 export interface PresetConfig {
   name: string
   label: string
   emitter: EmitterConfig
   forces: ForceConfig[]
+  background?: PresetBackground
 }
 
 export type ForceConfig =

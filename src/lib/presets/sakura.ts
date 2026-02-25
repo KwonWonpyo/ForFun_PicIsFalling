@@ -14,10 +14,15 @@ export const sakuraPreset: PresetConfig = {
     initialRotation: [0, Math.PI * 2],
     initialOpacity: [0.6, 1.0],
     color: [0xffb7c5, 0xff99aa, 0xffc0cb, 0xffaabb, 0xffe0e8],
+    texture: 'sakura',
   },
   forces: [
     { type: 'gravity', strength: 8 },
     { type: 'wind', strength: 12, angle: -0.3, variability: 15 },
     { type: 'turbulence', frequency: 0.3, amplitude: 35 },
   ],
+  background: {
+    type: 'gradient',
+    gradient: 'linear-gradient(180deg, #e8c4d0 0%, #f0d4dd 20%, #fce4ec 45%, #e8b4c8 70%, #5d8a66 85%, #4a7a5a 100%)',
+  },
 }

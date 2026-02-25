@@ -5,8 +5,14 @@ export class Particle {
   velocity: Vector2 = new Vector2()
   size: number = 4
   rotation: number = 0
+  rotationSpeed: number = 0
   opacity: number = 1
   color: number = 0xffffff
+
+  skewX: number = 0
+  scaleXOscillation: number = 0
+  scaleXPhase: number = 0
+  scaleXSpeed: number = 0
 
   age: number = 0
   lifetime: number = 10
@@ -30,12 +36,18 @@ export class Particle {
     this.velocity.set(vx, vy)
     this.size = size
     this.rotation = rotation
+    this.rotationSpeed = (Math.random() - 0.5) * 2
     this.opacity = opacity
     this.lifetime = lifetime
     this.color = color
     this.age = 0
     this.alive = true
     this.textureId = textureId
+
+    this.skewX = 0
+    this.scaleXOscillation = 0.3 + Math.random() * 0.5
+    this.scaleXPhase = Math.random() * Math.PI * 2
+    this.scaleXSpeed = 1.5 + Math.random() * 2
   }
 
   update(dt: number): void {
@@ -48,6 +60,14 @@ export class Particle {
     }
 
     this.position.addMut(this.velocity.scale(dt))
+
+    this.rotation += this.rotationSpeed * dt
+
+    this.scaleXPhase += this.scaleXSpeed * dt
+  }
+
+  get currentScaleX(): number {
+    return 1 - Math.sin(this.scaleXPhase) * this.scaleXOscillation
   }
 
   get lifeRatio(): number {

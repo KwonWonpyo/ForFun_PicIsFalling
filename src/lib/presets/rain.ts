@@ -14,9 +14,14 @@ export const rainPreset: PresetConfig = {
     initialRotation: [0, 0],
     initialOpacity: [0.3, 0.7],
     color: [0xaaccff, 0x88aadd, 0x99bbee],
+    texture: 'raindrop',
   },
   forces: [
     { type: 'gravity', strength: 80 },
     { type: 'wind', strength: 15, angle: 0, variability: 8 },
   ],
+  background: {
+    type: 'gradient',
+    gradient: 'linear-gradient(180deg, #2c3e50 0%, #4a6274 30%, #5a7a8a 60%, #6b8f9e 85%, #3d5c5c 100%)',
+  },
 }
