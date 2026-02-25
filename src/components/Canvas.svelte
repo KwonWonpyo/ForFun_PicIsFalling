@@ -13,13 +13,27 @@
   import { RepelForce } from '../lib/engine/physics/Forces'
   import { Vector2 } from '../lib/engine/physics/Vector2'
   import { livePreset } from '../stores/particleConfig'
-  import { backgroundColor, backgroundImage, useBackgroundImage } from '../stores/appState'
+  import { backgroundImage, useBackgroundImage } from '../stores/appState'
 
   let canvasContainer: HTMLDivElement
   let system: ParticleSystem | null = null
   let renderer: PixiRenderer | null = null
   let pixiApp: Application | null = null
   let mouseForce: RepelForce | null = null
+
+  let bgStyle = $derived.by(() => {
+    const preset = $livePreset
+
+    if ($useBackgroundImage && $backgroundImage) {
+      return `url(${$backgroundImage})`
+    }
+
+    if (preset.background?.type === 'gradient' && preset.background.gradient) {
+      return preset.background.gradient
+    }
+
+    return 'none'
+  })
 
   export function apply(): void {
     if (!system) return
@@ -43,21 +57,12 @@
     }
   })
 
-  $effect(() => {
-    const color = $backgroundColor
-    const useBg = $useBackgroundImage
-    if (pixiApp && !useBg) {
-      pixiApp.renderer.background.color = parseInt(color.replace('#', ''), 16)
-    }
-  })
-
   onMount(async () => {
     pixiApp = new Application()
-    const initBg = parseInt($backgroundColor.replace('#', ''), 16)
 
     await pixiApp.init({
       resizeTo: window,
-      background: initBg,
+      backgroundAlpha: 0,
       antialias: true,
     })
 
@@ -101,7 +106,7 @@
 <div
   bind:this={canvasContainer}
   class="canvas-container"
-  style:background-image={$useBackgroundImage && $backgroundImage ? `url(${$backgroundImage})` : 'none'}
+  style:background-image={bgStyle}
   style:background-size="cover"
   style:background-position="center"
 ></div>
@@ -113,6 +118,7 @@
     position: fixed;
     top: 0;
     left: 0;
+    transition: background-image 0.8s ease;
   }
 
   .canvas-container :global(canvas) {

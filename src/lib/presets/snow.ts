@@ -11,12 +11,17 @@ export const snowPreset: PresetConfig = {
     initialSpeed: [20, 60],
     initialDirection: [Math.PI * 0.4, Math.PI * 0.6],
     initialSize: [2, 8],
-    initialRotation: [0, 0],
+    initialRotation: [0, Math.PI * 2],
     initialOpacity: [0.4, 1.0],
     color: 0xffffff,
+    texture: 'snowflake',
   },
   forces: [
     { type: 'gravity', strength: 15 },
     { type: 'turbulence', frequency: 0.4, amplitude: 25 },
   ],
+  background: {
+    type: 'gradient',
+    gradient: 'linear-gradient(180deg, #0a1628 0%, #1a2a4a 40%, #2c3e6b 70%, #3d5a80 100%)',
+  },
 }
