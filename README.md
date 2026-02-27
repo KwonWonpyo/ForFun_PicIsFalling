@@ -46,9 +46,15 @@
 npm install     # 의존성 설치
 npm run dev     # 개발 서버 (HMR)
 npm run build   # 프로덕션 빌드
+npm run build:site # GitHub Pages(legacy source)용 site 빌드
 npm run check   # 타입 체크
 npx eslint src/ # 린트
 ```
+
+## GitHub Pages 배포 참고
+
+- 현재 GitHub Pages가 `Deploy from a branch (main / root)`인 경우, 루트 `index.html`은 자동으로 `/ForFun_PicIsFalling/site/`로 리다이렉트됩니다.
+- `main`에 반영할 때는 `npm run build:site`를 실행해 `site/` 산출물을 함께 업데이트해야 합니다.
 
 ## 프로젝트 구조
 
