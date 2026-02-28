@@ -23,6 +23,9 @@ const RASTER_SIZE = 64
 interface BucketEntry {
   particle: PixiParticle
   active: boolean
+  source: EngineParticle | null
+  tint: number
+  alpha: number
 }
 
 interface RenderBucket {
@@ -164,15 +167,25 @@ export class PixiRenderer {
         alpha: 0,
       })
       bucket.container.addParticle(particle)
-      bucket.pool.push({ particle, active: false })
+      bucket.pool.push({
+        particle,
+        active: false,
+        source: null,
+        tint: 0xffffff,
+        alpha: 0,
+      })
     }
   }
 
   private hideRange(bucket: RenderBucket, fromIndex: number): void {
     for (let i = fromIndex; i < bucket.activeCount; i++) {
       const entry = bucket.pool[i]
-      entry.particle.alpha = 0
+      if (entry.alpha !== 0) {
+        entry.particle.alpha = 0
+        entry.alpha = 0
+      }
       entry.active = false
+      entry.source = null
     }
   }
 
@@ -224,8 +237,17 @@ export class PixiRenderer {
         entry.particle.scaleX = baseScale * source.currentScaleX
         entry.particle.scaleY = baseScale
         entry.particle.rotation = source.rotation
-        entry.particle.alpha = source.opacity
-        entry.particle.tint = source.color
+        // color/alpha are effectively static for each spawned particle;
+        // update only when a pooled slot is rebound or value actually changes.
+        if (entry.source !== source || entry.alpha !== source.opacity) {
+          entry.particle.alpha = source.opacity
+          entry.alpha = source.opacity
+        }
+        if (entry.source !== source || entry.tint !== source.color) {
+          entry.particle.tint = source.color
+          entry.tint = source.color
+        }
+        entry.source = source
         entry.active = true
 
         writeIndexByBucket.set(selection.bucketKey, writeIndex + 1)

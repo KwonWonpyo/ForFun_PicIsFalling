@@ -59,7 +59,9 @@ export class Particle {
       return
     }
 
-    this.position.addMut(this.velocity.scale(dt))
+    // Avoid temporary vector allocations in hot path
+    this.position.x += this.velocity.x * dt
+    this.position.y += this.velocity.y * dt
 
     this.rotation += this.rotationSpeed * dt
 
