@@ -42,12 +42,22 @@ export class ParticleSystem {
   update(dt: number): void {
     this.time += dt
 
-    for (const emitter of this.emitters) {
+    const emitters = this.emitters
+    const forces = this.forces
+    const forceCount = forces.length
+    const time = this.time
+
+    for (let e = 0; e < emitters.length; e++) {
+      const emitter = emitters[e]
       emitter.emit(dt, this.bounds)
 
-      for (const particle of emitter.particles) {
-        for (const force of this.forces) {
-          force.apply(particle, dt, this.time)
+      if (forceCount > 0) {
+        const particles = emitter.particles
+        for (let p = 0; p < particles.length; p++) {
+          const particle = particles[p]
+          for (let f = 0; f < forceCount; f++) {
+            forces[f].apply(particle, dt, time)
+          }
         }
       }
 
