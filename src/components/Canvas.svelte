@@ -13,7 +13,7 @@
   import { onMount } from 'svelte'
   import { Application } from 'pixi.js'
   import { ParticleSystem } from '../lib/engine/ParticleSystem'
-  import { PixiRenderer } from '../lib/renderer/PixiRenderer'
+  import { PixiRenderer, type RenderLayerSource } from '../lib/renderer/PixiRenderer'
   import { RepelForce } from '../lib/engine/physics/Forces'
   import { Vector2 } from '../lib/engine/physics/Vector2'
   import { livePreset } from '../stores/particleConfig'
@@ -28,11 +28,15 @@
   let mouseForce: RepelForce | null = null
 
   interface Layer {
+    id: number
     system: ParticleSystem
-    renderer: PixiRenderer
     preset: string
+    renderLayer: RenderLayerSource
   }
   let extraLayers: Layer[] = []
+  let nextLayerId = 1
+  const baseRenderLayer: RenderLayerSource = { layerId: 0, emitters: [] }
+  const activeRenderLayers: RenderLayerSource[] = []
 
   let bgStyle = $derived.by(() => {
     const ambient = $ambientGradient
@@ -59,9 +63,13 @@
   }
 
   export function clear(): void {
-    if (!system) return
-    for (const emitter of system.emitters) {
-      emitter.clear()
+    if (system) {
+      for (const emitter of system.emitters) {
+        emitter.clear()
+      }
+    }
+    for (const layer of extraLayers) {
+      layer.system.clear()
     }
     renderer?.clear()
   }
@@ -75,21 +83,31 @@
     const preset = presetMap[presetName]
     if (!preset) return
 
+    const layerId = nextLayerId++
     const layerSystem = new ParticleSystem()
     layerSystem.setBounds(window.innerWidth, window.innerHeight)
     layerSystem.loadPreset(preset)
     if (mouseForce) layerSystem.addForce(mouseForce)
 
-    const layerRenderer = new PixiRenderer(pixiApp)
-    extraLayers = [...extraLayers, { system: layerSystem, renderer: layerRenderer, preset: presetName }]
+    extraLayers = [
+      ...extraLayers,
+      {
+        id: layerId,
+        system: layerSystem,
+        preset: presetName,
+        renderLayer: {
+          layerId,
+          emitters: layerSystem.emitters,
+        },
+      },
+    ]
   }
 
   export function removeLayer(index: number): void {
     if (index < 0 || index >= extraLayers.length) return
     const layer = extraLayers[index]
     layer.system.clear()
-    layer.renderer.clear()
-    layer.renderer.destroy()
+    renderer?.destroyLayer(layer.id)
     extraLayers = extraLayers.filter((_, i) => i !== index)
   }
 
@@ -143,19 +161,22 @@
     pixiApp.ticker.add((ticker) => {
       const dt = ticker.deltaTime / 60
 
-      system?.update(dt)
-      if (system) renderer?.sync(system)
+      activeRenderLayers.length = 0
+      if (system) {
+        system.update(dt)
+        baseRenderLayer.emitters = system.emitters
+        activeRenderLayers.push(baseRenderLayer)
+      }
 
       for (const layer of extraLayers) {
         layer.system.update(dt)
-        layer.renderer.sync(layer.system)
+        activeRenderLayers.push(layer.renderLayer)
       }
+
+      renderer?.sync(activeRenderLayers)
     })
 
     return () => {
-      for (const layer of extraLayers) {
-        layer.renderer.destroy()
-      }
       renderer?.destroy()
       pixiApp?.destroy(true)
     }

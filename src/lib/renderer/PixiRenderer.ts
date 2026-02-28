@@ -8,8 +8,8 @@ import {
   ParticleContainer,
   Particle as PixiParticle,
 } from 'pixi.js'
-import type { ParticleSystem } from '../engine/ParticleSystem'
 import type { Particle as EngineParticle } from '../engine/Particle'
+import type { Emitter } from '../engine/Emitter'
 
 const TEXTURE_PATHS: Record<string, string[]> = {
   snowflake: ['assets/particles/snowflake.svg'],
@@ -33,12 +33,18 @@ interface RenderBucket {
   texture: Texture
   pool: BucketEntry[]
   activeCount: number
+  layerId: number
 }
 
 interface TextureSelection {
   wantedKey: string
   bucketKey: string
   texture: Texture
+}
+
+export interface RenderLayerSource {
+  layerId: number
+  emitters: Emitter[]
 }
 
 export class PixiRenderer {
@@ -52,6 +58,7 @@ export class PixiRenderer {
 
   constructor(app: Application) {
     this.app = app
+    this.app.stage.sortableChildren = true
     this.loadTextures()
   }
 
@@ -135,7 +142,7 @@ export class PixiRenderer {
     return selection
   }
 
-  private createBucket(bucketKey: string, texture: Texture): RenderBucket {
+  private createBucket(bucketKey: string, texture: Texture, layerId: number): RenderBucket {
     const container = new ParticleContainer<PixiParticle>({
       texture,
       dynamicProperties: {
@@ -145,6 +152,7 @@ export class PixiRenderer {
         color: true,
       },
     })
+    container.zIndex = layerId
     this.app.stage.addChild(container)
 
     const bucket: RenderBucket = {
@@ -152,6 +160,7 @@ export class PixiRenderer {
       texture,
       pool: [],
       activeCount: 0,
+      layerId,
     }
 
     this.buckets.set(bucketKey, bucket)
@@ -189,24 +198,30 @@ export class PixiRenderer {
     }
   }
 
-  sync(system: ParticleSystem): void {
+  sync(layers: RenderLayerSource[]): void {
     if (!this.loaded) return
 
     const neededByBucket: Map<string, number> = new Map()
 
     // First pass: count live particles per texture bucket
-    for (let e = 0; e < system.emitters.length; e++) {
-      const particles = system.emitters[e].particles
-      for (let p = 0; p < particles.length; p++) {
-        const particle = particles[p]
-        if (!particle.alive) continue
+    for (let l = 0; l < layers.length; l++) {
+      const layer = layers[l]
+      const layerId = layer.layerId
+      const emitters = layer.emitters
+      for (let e = 0; e < emitters.length; e++) {
+        const particles = emitters[e].particles
+        for (let p = 0; p < particles.length; p++) {
+          const particle = particles[p]
+          if (!particle.alive) continue
 
-        const selection = this.getTextureSelection(particle)
-        if (!this.buckets.has(selection.bucketKey)) {
-          this.createBucket(selection.bucketKey, selection.texture)
+          const selection = this.getTextureSelection(particle)
+          const compositeKey = `${layerId}|${selection.bucketKey}`
+          if (!this.buckets.has(compositeKey)) {
+            this.createBucket(compositeKey, selection.texture, layerId)
+          }
+
+          neededByBucket.set(compositeKey, (neededByBucket.get(compositeKey) ?? 0) + 1)
         }
-
-        neededByBucket.set(selection.bucketKey, (neededByBucket.get(selection.bucketKey) ?? 0) + 1)
       }
     }
 
@@ -220,37 +235,43 @@ export class PixiRenderer {
 
     // Second pass: update visible particles in-place without extra arrays
     const writeIndexByBucket: Map<string, number> = new Map()
-    for (let e = 0; e < system.emitters.length; e++) {
-      const particles = system.emitters[e].particles
-      for (let p = 0; p < particles.length; p++) {
-        const source = particles[p]
-        if (!source.alive) continue
+    for (let l = 0; l < layers.length; l++) {
+      const layer = layers[l]
+      const layerId = layer.layerId
+      const emitters = layer.emitters
+      for (let e = 0; e < emitters.length; e++) {
+        const particles = emitters[e].particles
+        for (let p = 0; p < particles.length; p++) {
+          const source = particles[p]
+          if (!source.alive) continue
 
-        const selection = this.getTextureSelection(source)
-        const bucket = this.buckets.get(selection.bucketKey)!
-        const writeIndex = writeIndexByBucket.get(selection.bucketKey) ?? 0
-        const entry = bucket.pool[writeIndex]
+          const selection = this.getTextureSelection(source)
+          const compositeKey = `${layerId}|${selection.bucketKey}`
+          const bucket = this.buckets.get(compositeKey)!
+          const writeIndex = writeIndexByBucket.get(compositeKey) ?? 0
+          const entry = bucket.pool[writeIndex]
 
-        const baseScale = source.size / 8
-        entry.particle.x = source.position.x
-        entry.particle.y = source.position.y
-        entry.particle.scaleX = baseScale * source.currentScaleX
-        entry.particle.scaleY = baseScale
-        entry.particle.rotation = source.rotation
-        // color/alpha are effectively static for each spawned particle;
-        // update only when a pooled slot is rebound or value actually changes.
-        if (entry.source !== source || entry.alpha !== source.opacity) {
-          entry.particle.alpha = source.opacity
-          entry.alpha = source.opacity
+          const baseScale = source.size / 8
+          entry.particle.x = source.position.x
+          entry.particle.y = source.position.y
+          entry.particle.scaleX = baseScale * source.currentScaleX
+          entry.particle.scaleY = baseScale
+          entry.particle.rotation = source.rotation
+          // color/alpha are effectively static for each spawned particle;
+          // update only when a pooled slot is rebound or value actually changes.
+          if (entry.source !== source || entry.alpha !== source.opacity) {
+            entry.particle.alpha = source.opacity
+            entry.alpha = source.opacity
+          }
+          if (entry.source !== source || entry.tint !== source.color) {
+            entry.particle.tint = source.color
+            entry.tint = source.color
+          }
+          entry.source = source
+          entry.active = true
+
+          writeIndexByBucket.set(compositeKey, writeIndex + 1)
         }
-        if (entry.source !== source || entry.tint !== source.color) {
-          entry.particle.tint = source.color
-          entry.tint = source.color
-        }
-        entry.source = source
-        entry.active = true
-
-        writeIndexByBucket.set(selection.bucketKey, writeIndex + 1)
       }
     }
 
@@ -263,6 +284,20 @@ export class PixiRenderer {
     for (const bucket of this.buckets.values()) {
       this.hideRange(bucket, 0)
       bucket.activeCount = 0
+    }
+  }
+
+  destroyLayer(layerId: number): void {
+    const toDelete: string[] = []
+    for (const [bucketKey, bucket] of this.buckets) {
+      if (bucket.layerId === layerId) {
+        bucket.container.destroy({ children: true })
+        toDelete.push(bucketKey)
+      }
+    }
+
+    for (let i = 0; i < toDelete.length; i++) {
+      this.buckets.delete(toDelete[i])
     }
   }
 
