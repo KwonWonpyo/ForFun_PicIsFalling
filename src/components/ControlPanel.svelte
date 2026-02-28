@@ -25,6 +25,9 @@
     backgroundImage,
     useBackgroundImage,
     currentMode,
+    highPerformanceMode,
+    adaptiveQualityEnabled,
+    adaptiveQualityScale,
   } from '../stores/appState'
   import type { PresetConfig } from '../lib/engine/types'
 
@@ -52,6 +55,27 @@
   <section>
     <h3>이펙트 선택</h3>
     <PresetSelector current={$currentPresetName} onselect={handlePresetSelect} />
+  </section>
+
+  <section>
+    <h3>성능 설정</h3>
+    <label class="toggle-row">
+      <input
+        type="checkbox"
+        checked={$highPerformanceMode}
+        onchange={(e) => highPerformanceMode.set(e.currentTarget.checked)}
+      />
+      <span>고성능 렌더링 (안티앨리어싱 비활성)</span>
+    </label>
+    <label class="toggle-row">
+      <input
+        type="checkbox"
+        checked={$adaptiveQualityEnabled}
+        onchange={(e) => adaptiveQualityEnabled.set(e.currentTarget.checked)}
+      />
+      <span>자동 품질 조절 (목표 60fps)</span>
+    </label>
+    <p class="perf-scale">현재 품질 배율: {Math.round($adaptiveQualityScale * 100)}%</p>
   </section>
 
   {#if $currentMode === 'ambient'}
@@ -222,6 +246,12 @@
     display: flex;
     gap: 8px;
     padding: 12px 0;
+  }
+
+  .perf-scale {
+    font-size: 12px;
+    color: #8ab4f8;
+    margin-top: 2px;
   }
 
   .btn {
