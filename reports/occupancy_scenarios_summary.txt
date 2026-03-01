@@ -1,0 +1,36 @@
+Occupancy benchmark summary
+generatedAt: 2026-03-01T06:20:23.798Z
+bounds: 1920x1080
+fpsAssumption: 60
+sampleWindow: frame 120..719
+
+- 기대값 500 / 고속 (target500_high_speed)
+  - avgVisible: 501.4
+  - minVisible: 459.0
+  - maxVisible: 551.0
+  - avgTotal: 1912.7
+  - minTotal: 1865.0
+  - maxTotal: 1967.0
+  - avgAutoSpawn: 9979.6/s
+  - minVisibleAfter2s: 459.0
+  - occupancyRatio(avgVisible/target): 100.3%
+- 기대값 100 / 초고속 (target100_extreme_speed)
+  - avgVisible: 92.7
+  - minVisible: 77.0
+  - maxVisible: 109.0
+  - avgTotal: 556.7
+  - minTotal: 536.0
+  - maxTotal: 585.0
+  - avgAutoSpawn: 2905.5/s
+  - minVisibleAfter2s: 77.0
+  - occupancyRatio(avgVisible/target): 92.7%
+- 기대값 3000 / 고부하 (target3000_high_load)
+  - avgVisible: 3124.4
+  - minVisible: 2897.0
+  - maxVisible: 3410.0
+  - avgTotal: 8661.1
+  - minTotal: 8559.0
+  - maxTotal: 8778.0
+  - avgAutoSpawn: 45200.3/s
+  - minVisibleAfter2s: 2897.0
+  - occupancyRatio(avgVisible/target): 104.1%
