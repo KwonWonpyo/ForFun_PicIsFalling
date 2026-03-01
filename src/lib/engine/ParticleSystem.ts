@@ -1,6 +1,7 @@
 import { Emitter } from './Emitter'
 import type { Force } from './physics/Forces'
 import { createForce } from './physics/Forces'
+import { estimateDownwardAcceleration } from './occupancy'
 import type { PresetConfig, Bounds } from './types'
 
 export class ParticleSystem {
@@ -11,7 +12,13 @@ export class ParticleSystem {
 
   loadPreset(preset: PresetConfig): void {
     this.clear()
-    this.addEmitter(new Emitter(preset.emitter))
+    this.addEmitter(
+      new Emitter({
+        ...preset.emitter,
+        estimatedVerticalAcceleration:
+          preset.emitter.estimatedVerticalAcceleration ?? estimateDownwardAcceleration(preset.forces),
+      }),
+    )
     for (const fc of preset.forces) {
       this.addForce(createForce(fc))
     }

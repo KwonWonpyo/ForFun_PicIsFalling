@@ -4,8 +4,10 @@ export const leavesPreset: PresetConfig = {
   name: 'leaves',
   label: '🍂 낙엽',
   emitter: {
-    spawnRate: 10,
-    maxParticles: 200,
+    targetOnScreenParticles: 200,
+    safetyCap: 700,
+    estimatedVerticalAcceleration: 6.5,
+    topSpawnBandHeight: 20,
     spawnArea: { type: 'line', x1: -1, y1: -20, x2: -1, y2: -20 },
     particleLifetime: [12, 25],
     initialSpeed: [15, 40],

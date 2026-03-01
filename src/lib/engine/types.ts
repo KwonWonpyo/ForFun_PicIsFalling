@@ -4,8 +4,14 @@ export type SpawnArea =
   | { type: 'rect'; x: number; y: number; width: number; height: number }
 
 export interface EmitterConfig {
-  spawnRate: number
-  maxParticles: number
+  targetOnScreenParticles: number
+  spawnRateAuto?: number
+  safetyCap?: number
+  estimatedVerticalAcceleration?: number
+  topSpawnBandHeight?: number
+  // Legacy compatibility fields (v1 scene data / old presets)
+  spawnRate?: number
+  maxParticles?: number
   spawnArea: SpawnArea
   particleLifetime: [number, number]
   initialSpeed: [number, number]

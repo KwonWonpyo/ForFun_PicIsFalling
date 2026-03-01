@@ -4,8 +4,10 @@ export const rainPreset: PresetConfig = {
   name: 'rain',
   label: '🌧️ 비',
   emitter: {
-    spawnRate: 120,
-    maxParticles: 2000,
+    targetOnScreenParticles: 2000,
+    safetyCap: 4200,
+    estimatedVerticalAcceleration: 80,
+    topSpawnBandHeight: 24,
     spawnArea: { type: 'line', x1: -1, y1: -30, x2: -1, y2: -30 },
     particleLifetime: [2, 5],
     initialSpeed: [150, 250],
