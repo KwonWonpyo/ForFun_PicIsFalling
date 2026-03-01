@@ -4,8 +4,10 @@ export const snowPreset: PresetConfig = {
   name: 'snow',
   label: '❄️ 눈',
   emitter: {
-    spawnRate: 40,
-    maxParticles: 800,
+    targetOnScreenParticles: 800,
+    safetyCap: 1800,
+    estimatedVerticalAcceleration: 15,
+    topSpawnBandHeight: 18,
     spawnArea: { type: 'line', x1: -1, y1: -20, x2: -1, y2: -20 },
     particleLifetime: [8, 16],
     initialSpeed: [20, 60],

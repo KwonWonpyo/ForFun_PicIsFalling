@@ -4,8 +4,10 @@ export const sakuraPreset: PresetConfig = {
   name: 'sakura',
   label: '🌸 벚꽃',
   emitter: {
-    spawnRate: 15,
-    maxParticles: 300,
+    targetOnScreenParticles: 300,
+    safetyCap: 900,
+    estimatedVerticalAcceleration: 4.5,
+    topSpawnBandHeight: 20,
     spawnArea: { type: 'line', x1: -1, y1: -20, x2: -1, y2: -20 },
     particleLifetime: [10, 20],
     initialSpeed: [10, 35],
