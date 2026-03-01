@@ -1,9 +1,21 @@
 import { Particle } from './Particle'
 import { Vector2 } from './physics/Vector2'
 import type { EmitterConfig, SpawnArea, Bounds } from './types'
+import {
+  calculateAutoSpawnRate,
+  normalizeSpawnArea,
+  resolveDynamicSafetyCap,
+  resolveTopBandDefault,
+} from './occupancy'
+
+const GOLDEN_RATIO_CONJUGATE = 0.6180339887498949
 
 function rand(min: number, max: number): number {
   return Math.random() * (max - min) + min
+}
+
+function fract(value: number): number {
+  return value - Math.floor(value)
 }
 
 function pickColor(color: number | number[]): number {
@@ -11,26 +23,61 @@ function pickColor(color: number | number[]): number {
   return color[Math.floor(Math.random() * color.length)]
 }
 
-function spawnPosition(area: SpawnArea, bounds: Bounds): Vector2 {
-  switch (area.type) {
+function isHorizontalLine(area: SpawnArea): area is Extract<SpawnArea, { type: 'line' }> {
+  return area.type === 'line' && Math.abs(area.y1 - area.y2) < 0.001
+}
+
+function resolveTopSpawnBandHeight(config: EmitterConfig): number {
+  if (config.topSpawnBandHeight !== undefined) {
+    return Math.max(0, config.topSpawnBandHeight)
+  }
+  return resolveTopBandDefault(config.spawnArea)
+}
+
+function estimateJitterStrength(targetOnScreenParticles: number): number {
+  const normalizedTarget = Math.max(20, targetOnScreenParticles)
+  return Math.min(0.12, 3 / normalizedTarget)
+}
+
+function spawnPosition(
+  area: SpawnArea,
+  bounds: Bounds,
+  sequence: number,
+  topSpawnBandHeight: number,
+  targetOnScreenParticles: number,
+): Vector2 {
+  const normalizedArea = normalizeSpawnArea(area, bounds)
+
+  const jitter = (Math.random() - 0.5) * estimateJitterStrength(targetOnScreenParticles)
+  const t = fract(sequence + jitter)
+
+  switch (normalizedArea.type) {
     case 'point':
-      return new Vector2(area.x, area.y)
+      return new Vector2(normalizedArea.x, normalizedArea.y)
     case 'line': {
-      const t = Math.random()
-      const x1 = area.x1 === -1 ? 0 : area.x1
-      const x2 = area.x2 === -1 ? bounds.width : area.x2
-      const y1 = area.y1 === -1 ? 0 : area.y1
-      const y2 = area.y2 === -1 ? bounds.height : area.y2
-      return new Vector2(x1 + (x2 - x1) * t, y1 + (y2 - y1) * t)
+      const x = normalizedArea.x1 + (normalizedArea.x2 - normalizedArea.x1) * t
+      let y = normalizedArea.y1 + (normalizedArea.y2 - normalizedArea.y1) * t
+      if (isHorizontalLine(normalizedArea) && topSpawnBandHeight > 0) {
+        y += Math.random() * topSpawnBandHeight
+      }
+      return new Vector2(x, y)
     }
     case 'rect': {
-      const x = area.x === -1 ? 0 : area.x
-      const y = area.y === -1 ? 0 : area.y
-      const w = area.width === -1 ? bounds.width : area.width
-      const h = area.height === -1 ? bounds.height : area.height
-      return new Vector2(x + Math.random() * w, y + Math.random() * h)
+      const v = fract(sequence + GOLDEN_RATIO_CONJUGATE)
+      return new Vector2(
+        normalizedArea.x + t * normalizedArea.width,
+        normalizedArea.y + v * normalizedArea.height,
+      )
     }
   }
+}
+
+function resolveSpawnRate(config: EmitterConfig, bounds: Bounds): number {
+  return calculateAutoSpawnRate(config, bounds)
+}
+
+function nextQuasiRandom(index: number, seed: number): number {
+  return fract(seed + index * GOLDEN_RATIO_CONJUGATE)
 }
 
 export class Emitter {
@@ -39,6 +86,8 @@ export class Emitter {
 
   private pool: Particle[] = []
   private spawnAccumulator: number = 0
+  private spawnSequenceIndex: number = 0
+  private spawnSequenceSeed: number = Math.random()
 
   constructor(config: EmitterConfig) {
     this.config = config
@@ -54,10 +103,21 @@ export class Emitter {
   }
 
   emit(dt: number, bounds: Bounds): void {
-    this.spawnAccumulator += this.config.spawnRate * dt
+    const spawnRate = resolveSpawnRate(this.config, bounds)
+    this.config.spawnRateAuto = spawnRate
+    const safetyCap = resolveDynamicSafetyCap(this.config, spawnRate)
+
+    this.spawnAccumulator += spawnRate * dt
+    const accumulatorCap = Math.max(2, safetyCap * 0.25)
+    if (this.spawnAccumulator > accumulatorCap) {
+      this.spawnAccumulator = accumulatorCap
+    }
 
     while (this.spawnAccumulator >= 1) {
-      if (this.particles.length >= this.config.maxParticles) break
+      if (this.particles.length >= safetyCap) {
+        this.spawnAccumulator = Math.min(this.spawnAccumulator, 1)
+        break
+      }
 
       this.spawnAccumulator -= 1
       this.spawnOne(bounds)
@@ -66,7 +126,15 @@ export class Emitter {
 
   private spawnOne(bounds: Bounds): void {
     const c = this.config
-    const pos = spawnPosition(c.spawnArea, bounds)
+    const sequence = nextQuasiRandom(this.spawnSequenceIndex, this.spawnSequenceSeed)
+    this.spawnSequenceIndex++
+    const pos = spawnPosition(
+      c.spawnArea,
+      bounds,
+      sequence,
+      resolveTopSpawnBandHeight(c),
+      Math.max(1, c.targetOnScreenParticles),
+    )
     const angle = rand(c.initialDirection[0], c.initialDirection[1])
     const speed = rand(c.initialSpeed[0], c.initialSpeed[1])
     const vel = Vector2.fromAngle(angle, speed)
@@ -107,6 +175,8 @@ export class Emitter {
     }
     this.particles.length = 0
     this.spawnAccumulator = 0
+    this.spawnSequenceIndex = 0
+    this.spawnSequenceSeed = Math.random()
   }
 
   get particleCount(): number {

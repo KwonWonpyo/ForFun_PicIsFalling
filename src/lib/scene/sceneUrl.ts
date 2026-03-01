@@ -1,4 +1,3 @@
-import type { SceneData } from './SceneData'
 import { captureScene } from './sceneExport'
 import { applyScene } from './sceneImport'
 
@@ -25,7 +24,7 @@ export function loadSceneFromUrl(): boolean {
 
   try {
     const json = decodeURIComponent(atob(sceneParam))
-    const scene = JSON.parse(json) as SceneData
+    const scene = JSON.parse(json) as unknown
     return applyScene(scene)
   } catch {
     return false

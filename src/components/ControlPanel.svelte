@@ -7,8 +7,9 @@
   import AmbientPanel from './AmbientPanel.svelte'
   import CreatePanel from './CreatePanel.svelte'
   import {
-    spawnRate,
-    maxParticles,
+    targetOnScreenParticles,
+    estimatedSpawnRatePerSecond,
+    estimatedResidenceTimeFrames,
     minSize,
     maxSize,
     opacity,
@@ -87,22 +88,15 @@
   <section>
     <h3>파티클 설정</h3>
     <SliderControl
-      label="파티클 수"
-      value={$maxParticles}
+      label="화면 내 파티클 기대값"
+      value={$targetOnScreenParticles}
       min={50}
       max={3000}
       step={50}
-      onchange={(v) => maxParticles.set(v)}
+      onchange={(v) => targetOnScreenParticles.set(v)}
     />
-    <SliderControl
-      label="생성 속도"
-      value={$spawnRate}
-      min={5}
-      max={200}
-      step={5}
-      unit="/s"
-      onchange={(v) => spawnRate.set(v)}
-    />
+    <p class="auto-stat">자동 생성량(추정): {$estimatedSpawnRatePerSecond}/s</p>
+    <p class="auto-stat">평균 체류시간(추정): {$estimatedResidenceTimeFrames} 프레임</p>
     <SliderControl
       label="최소 크기"
       value={$minSize}
@@ -252,6 +246,12 @@
     font-size: 12px;
     color: #8ab4f8;
     margin-top: 2px;
+  }
+
+  .auto-stat {
+    font-size: 12px;
+    color: #9fb6df;
+    margin: 2px 0 6px;
   }
 
   .btn {

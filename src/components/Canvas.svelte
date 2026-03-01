@@ -96,8 +96,11 @@
     if (targetSystem.emitters.length === 0) return
 
     const next = cloneEmitterConfig(baseEmitter)
-    next.spawnRate = Math.max(1, Math.round(next.spawnRate * adaptiveScale))
-    next.maxParticles = Math.max(50, Math.round(next.maxParticles * adaptiveScale))
+    next.targetOnScreenParticles = Math.max(20, Math.round(next.targetOnScreenParticles * adaptiveScale))
+    next.safetyCap = Math.max(
+      next.targetOnScreenParticles,
+      Math.round((next.safetyCap ?? next.targetOnScreenParticles * 1.8) * adaptiveScale),
+    )
     targetSystem.emitters[0].config = next
   }
 

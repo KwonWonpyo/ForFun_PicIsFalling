@@ -3,8 +3,7 @@ import { createSceneData } from './SceneData'
 import { get } from 'svelte/store'
 import {
   currentPresetName,
-  spawnRate,
-  maxParticles,
+  targetOnScreenParticles,
   minSize,
   maxSize,
   opacity,
@@ -18,8 +17,7 @@ export function captureScene(): SceneData {
   return createSceneData(
     get(currentPresetName),
     {
-      spawnRate: get(spawnRate),
-      maxParticles: get(maxParticles),
+      targetOnScreenParticles: get(targetOnScreenParticles),
       minSize: get(minSize),
       maxSize: get(maxSize),
       opacity: get(opacity),
